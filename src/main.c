@@ -6,6 +6,7 @@
 #include "directory_reader.h"
 #include "file_info.h"
 #include "display.h"
+#include <sys/stat.h>
 
 /**
  * @brief Comparison function for qsort to sort strings alphabetically
@@ -14,6 +15,20 @@ int compare_strings(const void *a, const void *b) {
     const char *str_a = *(const char**)a;
     const char *str_b = *(const char**)b;
     return strcmp(str_a, str_b);
+}
+
+// Helper structure and comparator for sorting by modification time
+typedef struct {
+    const char *name;
+    time_t mtime;
+} EntryTime;
+
+static int entrytime_cmp(const void *a, const void *b) {
+    const EntryTime *ea = (const EntryTime *)a;
+    const EntryTime *eb = (const EntryTime *)b;
+    if (ea->mtime < eb->mtime) return 1;  // newer first
+    if (ea->mtime > eb->mtime) return -1;
+    return strcmp(ea->name, eb->name);
 }
 
 /**
@@ -80,11 +95,48 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Sort entries alphabetically
-    qsort(content.entries,
-          content.count,
-          sizeof(char*),
-          compare_strings);
+    // If sorting by time is requested, build an array of mtimes and sort by that.
+    char **display_order = NULL; // array of char* pointing into content.entries in the desired order
+    if (options.sort_time) {
+        EntryTime *et = (EntryTime *)malloc(content.count * sizeof(EntryTime));
+        if (et == NULL) {
+            // Fallback to alphabetical
+            qsort(content.entries, content.count, sizeof(char *), compare_strings);
+        } else {
+            for (int i = 0; i < content.count; i++) {
+                et[i].name = content.entries[i];
+                char *full_path = construct_full_path(dir_path, content.entries[i]);
+                struct stat st;
+                if (full_path != NULL && stat(full_path, &st) == 0) {
+                    et[i].mtime = st.st_mtime;
+                } else {
+                    et[i].mtime = 0;
+                }
+                if (full_path != NULL) free(full_path);
+            }
+
+            qsort(et, content.count, sizeof(EntryTime), entrytime_cmp);
+
+            // Build display_order referencing original name pointers in sorted order
+            display_order = (char **)malloc(content.count * sizeof(char *));
+            if (display_order != NULL) {
+                for (int i = 0; i < content.count; i++) {
+                    display_order[i] = (char *)et[i].name;
+                }
+            } else {
+                // Allocation failed; fall back to alphabetical
+                qsort(content.entries, content.count, sizeof(char *), compare_strings);
+            }
+
+            free(et);
+        }
+    } else {
+        // Sort entries alphabetically
+        qsort(content.entries,
+              content.count,
+              sizeof(char*),
+              compare_strings);
+    }
 
     // Display based on format option
     if (options.long_format) {
@@ -93,14 +145,16 @@ int main(int argc, char *argv[]) {
         if (file_infos == NULL) {
             fprintf(stderr, "Error: Memory allocation failed\n");
             free_directory_content(content);
+            if (display_order != NULL) free(display_order);
             return 1;
         }
 
-        // Get file info for each entry
+        // Get file info for each entry in the chosen display order
         for (int i = 0; i < content.count; i++) {
-            char *full_path = construct_full_path(dir_path, content.entries[i]);
+            const char *name = (display_order != NULL) ? (const char *)display_order[i] : (const char *)content.entries[i];
+            char *full_path = construct_full_path(dir_path, name);
             if (full_path != NULL) {
-                file_infos[i] = get_file_info(full_path, content.entries[i]);
+                file_infos[i] = get_file_info(full_path, name);
                 free(full_path);
             } else {
                 // Initialize empty FileInfo on error
@@ -108,17 +162,23 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // Display in long format
-        display_long_format(file_infos, content.count);
+        // Display in long format (pass human_readable option)
+        display_long_format(file_infos, content.count, options.human_readable);
 
         // Free file info structures
         for (int i = 0; i < content.count; i++) {
             free_file_info(file_infos[i]);
         }
         free(file_infos);
+        if (display_order != NULL) free(display_order);
     } else {
         // Normal format: just display names
-        display_normal((const char **)content.entries, content.count);
+        if (display_order != NULL) {
+            display_normal((const char **)display_order, content.count);
+            free(display_order);
+        } else {
+            display_normal((const char **)content.entries, content.count);
+        }
     }
 
     // Clean up directory content

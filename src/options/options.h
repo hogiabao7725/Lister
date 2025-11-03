@@ -7,6 +7,8 @@
 typedef struct {
     int show_all;      // -a flag: show all files including hidden ones
     int long_format;   // -l flag: display in long format
+    int human_readable; // -h flag: display sizes in human-readable format (e.g., 1K, 2M)
+    int sort_time;     // -t flag: sort files by modification time (newest first)
 } Options;
 
 /**
