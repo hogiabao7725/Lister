@@ -76,7 +76,7 @@ void display_normal(const char **entries, int count) {
     }
 }
 
-void display_long_format(FileInfo *file_infos, int count) {
+void display_long_format(FileInfo *file_infos, int count, int human_readable) {
     if (file_infos == NULL) {
         return;
     }
@@ -85,8 +85,10 @@ void display_long_format(FileInfo *file_infos, int count) {
     int max_links = 0;
     int max_owner_len = 0;
     int max_group_len = 0;
-    long long max_size = 0;
+    int max_size_str_len = 0;
 
+    // Calculate maximum size string length for human-readable or regular format
+    char size_buffer[16];
     for (int i = 0; i < count; i++) {
         // Count digits in link count
         int link_digits = 1;
@@ -115,18 +117,25 @@ void display_long_format(FileInfo *file_infos, int count) {
             }
         }
 
-        // Check file size
-        if (file_infos[i].size > max_size) {
-            max_size = file_infos[i].size;
+        // Calculate size string length
+        if (human_readable) {
+            format_human_readable_size(file_infos[i].size, size_buffer, sizeof(size_buffer));
+            int size_str_len = (int)strlen(size_buffer);
+            if (size_str_len > max_size_str_len) {
+                max_size_str_len = size_str_len;
+            }
+        } else {
+            // Calculate digits in size
+            int size_digits = 1;
+            long long temp_size = file_infos[i].size;
+            while (temp_size >= 10) {
+                size_digits++;
+                temp_size /= 10;
+            }
+            if (size_digits > max_size_str_len) {
+                max_size_str_len = size_digits;
+            }
         }
-    }
-
-    // Calculate width for size field
-    int size_width = 1;
-    long long temp_size = max_size;
-    while (temp_size >= 10) {
-        size_width++;
-        temp_size /= 10;
     }
 
     // Display each file in long format
@@ -152,7 +161,12 @@ void display_long_format(FileInfo *file_infos, int count) {
         }
 
         // Size (right-aligned)
-        printf("%*lld ", size_width, file_infos[i].size);
+        if (human_readable) {
+            format_human_readable_size(file_infos[i].size, size_buffer, sizeof(size_buffer));
+            printf("%*s ", max_size_str_len, size_buffer);
+        } else {
+            printf("%*lld ", max_size_str_len, file_infos[i].size);
+        }
 
         // Date
         if (file_infos[i].date_string != NULL) {

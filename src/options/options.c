@@ -7,6 +7,8 @@ void init_options(Options *options) {
     }
     options->show_all = 0;
     options->long_format = 0;
+    options->sort_by_time = 0;
+    options->human_readable = 0;
 }
 
 int parse_options(int argc, char *argv[], Options *options) {
@@ -31,6 +33,12 @@ int parse_options(int argc, char *argv[], Options *options) {
                         break;
                     case 'l':
                         options->long_format = 1;
+                        break;
+                    case 't':
+                        options->sort_by_time = 1;
+                        break;
+                    case 'h':
+                        options->human_readable = 1;
                         break;
                     default:
                         // Ignore unknown options for now

@@ -44,4 +44,13 @@ void free_file_info(FileInfo info);
  */
 void mode_to_permissions(mode_t mode, char *perm_string);
 
+/**
+ * @brief Format file size in human-readable format (KB, MB, GB, etc.)
+ * 
+ * @param size File size in bytes
+ * @param buffer Buffer to store formatted string (must be at least 12 chars for "XXXX.XXGiB")
+ * @param buffer_size Size of the buffer
+ */
+void format_human_readable_size(long long size, char *buffer, size_t buffer_size);
+
 #endif

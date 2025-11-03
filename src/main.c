@@ -1,11 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "options.h"
 #include "directory_reader.h"
 #include "file_info.h"
 #include "display.h"
+
+// Global variable to store directory path for comparison functions
+static const char *g_dir_path = NULL;
+
+// Forward declaration
+char *construct_full_path(const char *base_path, const char *filename);
 
 /**
  * @brief Comparison function for qsort to sort strings alphabetically
@@ -14,6 +21,51 @@ int compare_strings(const void *a, const void *b) {
     const char *str_a = *(const char**)a;
     const char *str_b = *(const char**)b;
     return strcmp(str_a, str_b);
+}
+
+/**
+ * @brief Comparison function for qsort to sort by modification time (newest first)
+ */
+int compare_by_time(const void *a, const void *b) {
+    const char *str_a = *(const char**)a;
+    const char *str_b = *(const char**)b;
+    
+    if (g_dir_path == NULL) {
+        return strcmp(str_a, str_b);
+    }
+
+    // Construct full paths
+    char *path_a = construct_full_path(g_dir_path, str_a);
+    char *path_b = construct_full_path(g_dir_path, str_b);
+    
+    if (path_a == NULL || path_b == NULL) {
+        if (path_a != NULL) free(path_a);
+        if (path_b != NULL) free(path_b);
+        return strcmp(str_a, str_b);
+    }
+
+    // Get file stats
+    struct stat stat_a, stat_b;
+    int result = 0;
+    
+    if (stat(path_a, &stat_a) == 0 && stat(path_b, &stat_b) == 0) {
+        // Compare modification times (newer files first)
+        if (stat_a.st_mtime > stat_b.st_mtime) {
+            result = -1;  // a is newer, so it comes first
+        } else if (stat_a.st_mtime < stat_b.st_mtime) {
+            result = 1;   // b is newer, so it comes first
+        } else {
+            // Same time, sort alphabetically
+            result = strcmp(str_a, str_b);
+        }
+    } else {
+        // If stat fails, fall back to alphabetical
+        result = strcmp(str_a, str_b);
+    }
+
+    free(path_a);
+    free(path_b);
+    return result;
 }
 
 /**
@@ -80,11 +132,22 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Sort entries alphabetically
-    qsort(content.entries,
-          content.count,
-          sizeof(char*),
-          compare_strings);
+    // Sort entries based on option
+    if (options.sort_by_time) {
+        // Set global directory path for comparison function
+        g_dir_path = dir_path;
+        qsort(content.entries,
+              content.count,
+              sizeof(char*),
+              compare_by_time);
+        g_dir_path = NULL;
+    } else {
+        // Sort alphabetically by default
+        qsort(content.entries,
+              content.count,
+              sizeof(char*),
+              compare_strings);
+    }
 
     // Display based on format option
     if (options.long_format) {
@@ -109,7 +172,7 @@ int main(int argc, char *argv[]) {
         }
 
         // Display in long format
-        display_long_format(file_infos, content.count);
+        display_long_format(file_infos, content.count, options.human_readable);
 
         // Free file info structures
         for (int i = 0; i < content.count; i++) {

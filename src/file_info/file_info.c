@@ -161,3 +161,32 @@ void free_file_info(FileInfo info) {
         free(info.date_string);
     }
 }
+
+void format_human_readable_size(long long size, char *buffer, size_t buffer_size) {
+    if (buffer == NULL || buffer_size == 0) {
+        return;
+    }
+
+    const char *units[] = {"B", "K", "M", "G", "T", "P"};
+    int unit_index = 0;
+    double size_double = (double)size;
+
+    // Convert to appropriate unit
+    while (size_double >= 1024.0 && unit_index < 5) {
+        size_double /= 1024.0;
+        unit_index++;
+    }
+
+    // Format the string
+    if (unit_index == 0) {
+        // Bytes: show as integer
+        snprintf(buffer, buffer_size, "%lld%s", (long long)size_double, units[unit_index]);
+    } else {
+        // KB and above: show with 1 decimal place if less than 10, otherwise integer
+        if (size_double < 10.0) {
+            snprintf(buffer, buffer_size, "%.1f%s", size_double, units[unit_index]);
+        } else {
+            snprintf(buffer, buffer_size, "%.0f%s", size_double, units[unit_index]);
+        }
+    }
+}
