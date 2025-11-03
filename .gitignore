@@ -1,0 +1,32 @@
+# --- Build directories ---
+/build/
+/bin/
+
+# --- Object files ---
+*.o
+*.obj
+
+# --- Executables ---
+*.exe
+*.out
+*.app
+lister
+
+# --- Debug / log files ---
+*.log
+*.tmp
+*.swp
+
+# --- IDE / Editor configs ---
+# VSCode
+.vscode/
+# CLion / JetBrains
+.idea/
+cmake-build-*/
+
+# --- OS-specific ---
+# macOS
+.DS_Store
+# Windows
+Thumbs.db
+desktop.ini
