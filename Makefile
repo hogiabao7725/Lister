@@ -48,4 +48,36 @@ clean:
 	@echo "Cleaning..."
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 
-.PHONY: all clean
+# --- Installation ---
+# Default installation directory
+INSTALL_DIR = /usr/local/bin
+
+# Install target: build and copy to system path
+install: $(TARGET)
+	@echo "Installing lister to $(INSTALL_DIR)..."
+	@mkdir -p $(INSTALL_DIR)
+	@cp $(TARGET) $(INSTALL_DIR)/lister
+	@chmod +x $(INSTALL_DIR)/lister
+	@echo "Installation completed! You can now use 'lister' from anywhere."
+
+# Install to user's local bin directory (no sudo required)
+install-user: $(TARGET)
+	@echo "Installing lister to ~/bin..."
+	@mkdir -p $$HOME/bin
+	@cp $(TARGET) $$HOME/bin/lister
+	@chmod +x $$HOME/bin/lister
+	@echo "Installation completed to $$HOME/bin/lister"
+
+# Uninstall target: remove from system
+uninstall:
+	@echo "Uninstalling lister from $(INSTALL_DIR)..."
+	@rm -f $(INSTALL_DIR)/lister
+	@echo "Uninstallation completed!"
+
+# Uninstall from user's local bin
+uninstall-user:
+	@echo "Uninstalling lister from $$HOME/bin..."
+	@rm -f $$HOME/bin/lister
+	@echo "Uninstallation completed!"
+
+.PHONY: all clean install install-user uninstall uninstall-user
