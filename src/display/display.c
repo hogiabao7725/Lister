@@ -76,7 +76,10 @@ void display_normal(const char **entries, int count) {
     }
 }
 
-void display_long_format(FileInfo *file_infos, int count, int human_readable) {
+/**
+ * @brief Display files in long format (-l), optionally human readable (-h) and block size (-s)
+ */
+void display_long_format(FileInfo *file_infos, int count, int human_readable, int show_block_size) {
     if (file_infos == NULL) {
         return;
     }
@@ -86,11 +89,13 @@ void display_long_format(FileInfo *file_infos, int count, int human_readable) {
     int max_owner_len = 0;
     int max_group_len = 0;
     int max_size_str_len = 0;
+    int max_blocks_len = 0;
 
-    // Calculate maximum size string length for human-readable or regular format
     char size_buffer[16];
+    char block_buffer[16];
+
     for (int i = 0; i < count; i++) {
-        // Count digits in link count
+        // Link count digits
         int link_digits = 1;
         int temp_links = file_infos[i].link_count;
         while (temp_links >= 10) {
@@ -101,7 +106,7 @@ void display_long_format(FileInfo *file_infos, int count, int human_readable) {
             max_links = link_digits;
         }
 
-        // Check owner name length
+        // Owner
         if (file_infos[i].owner != NULL) {
             int owner_len = (int)strlen(file_infos[i].owner);
             if (owner_len > max_owner_len) {
@@ -109,7 +114,7 @@ void display_long_format(FileInfo *file_infos, int count, int human_readable) {
             }
         }
 
-        // Check group name length
+        // Group
         if (file_infos[i].group != NULL) {
             int group_len = (int)strlen(file_infos[i].group);
             if (group_len > max_group_len) {
@@ -117,7 +122,7 @@ void display_long_format(FileInfo *file_infos, int count, int human_readable) {
             }
         }
 
-        // Calculate size string length
+        // File size
         if (human_readable) {
             format_human_readable_size(file_infos[i].size, size_buffer, sizeof(size_buffer));
             int size_str_len = (int)strlen(size_buffer);
@@ -125,9 +130,8 @@ void display_long_format(FileInfo *file_infos, int count, int human_readable) {
                 max_size_str_len = size_str_len;
             }
         } else {
-            // Calculate digits in size
-            int size_digits = 1;
             long long temp_size = file_infos[i].size;
+            int size_digits = 1;
             while (temp_size >= 10) {
                 size_digits++;
                 temp_size /= 10;
@@ -136,31 +140,46 @@ void display_long_format(FileInfo *file_infos, int count, int human_readable) {
                 max_size_str_len = size_digits;
             }
         }
+
+        // Block count
+        if (show_block_size) {
+            long long blocks = file_infos[i].stat_info.st_blocks / 2; // st_blocks = 512B, convert to 1K
+            snprintf(block_buffer, sizeof(block_buffer), "%lld", blocks);
+            int block_len = (int)strlen(block_buffer);
+            if (block_len > max_blocks_len) {
+                max_blocks_len = block_len;
+            }
+        }
     }
 
     // Display each file in long format
     for (int i = 0; i < count; i++) {
+
+        // Display block size (-s)
+        if (show_block_size) {
+            long long blocks = file_infos[i].stat_info.st_blocks / 2; 
+            printf("%*lld ", max_blocks_len, blocks);
+        }
+
         // Permissions
         printf("%s ", file_infos[i].permissions);
 
         // Link count
         printf("%*d ", max_links, file_infos[i].link_count);
 
-        // Owner (left-aligned)
-        if (file_infos[i].owner != NULL) {
+        // Owner
+        if (file_infos[i].owner != NULL)
             printf("%-*s ", max_owner_len, file_infos[i].owner);
-        } else {
+        else
             printf("%-*s ", max_owner_len, "");
-        }
 
-        // Group (left-aligned)
-        if (file_infos[i].group != NULL) {
+        // Group
+        if (file_infos[i].group != NULL)
             printf("%-*s ", max_group_len, file_infos[i].group);
-        } else {
+        else
             printf("%-*s ", max_group_len, "");
-        }
 
-        // Size (right-aligned)
+        // Size
         if (human_readable) {
             format_human_readable_size(file_infos[i].size, size_buffer, sizeof(size_buffer));
             printf("%*s ", max_size_str_len, size_buffer);
@@ -169,16 +188,14 @@ void display_long_format(FileInfo *file_infos, int count, int human_readable) {
         }
 
         // Date
-        if (file_infos[i].date_string != NULL) {
+        if (file_infos[i].date_string != NULL)
             printf("%s ", file_infos[i].date_string);
-        } else {
+        else
             printf("            ");
-        }
 
         // File name
-        if (file_infos[i].name != NULL) {
+        if (file_infos[i].name != NULL)
             printf("%s", file_infos[i].name);
-        }
 
         printf("\n");
     }

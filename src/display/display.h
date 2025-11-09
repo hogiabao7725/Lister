@@ -18,6 +18,6 @@ void display_normal(const char **entries, int count);
  * @param count Number of files
  * @param human_readable If non-zero, display file sizes in human-readable format
  */
-void display_long_format(FileInfo *file_infos, int count, int human_readable);
+void display_long_format(FileInfo *file_infos, int count, int human_readable, int show_block_size);
 
 #endif

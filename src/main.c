@@ -112,8 +112,7 @@ int main(int argc, char *argv[]) {
     // Determine directory path (default to current directory)
     const char *dir_path = ".";
     
-    // If directory path is provided, use it (for now, just use current directory)
-    // Future: support multiple directories
+    // If directory path is provided, use it
     if (non_option_count > 0) {
         // Find first non-option argument
         for (int i = 1; i < argc; i++) {
@@ -132,6 +131,22 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // Apply -d option: keep only directories
+    if (options.only_dirs) {
+        int dir_count = 0;
+        for (int i = 0; i < content.count; i++) {
+            char *full_path = construct_full_path(dir_path, content.entries[i]);
+            struct stat s;
+            if (full_path && stat(full_path, &s) == 0 && S_ISDIR(s.st_mode)) {
+                content.entries[dir_count++] = content.entries[i];
+            } else {
+                free(content.entries[i]);
+            }
+            free(full_path);
+        }
+        content.count = dir_count;
+    }
+
     // Sort entries based on option
     if (options.sort_by_time) {
         // Set global directory path for comparison function
@@ -147,6 +162,15 @@ int main(int argc, char *argv[]) {
               content.count,
               sizeof(char*),
               compare_strings);
+    }
+
+    // Apply -r option: reverse order
+    if (options.reverse_order && content.count > 1) {
+        for (int i = 0; i < content.count / 2; i++) {
+            char *tmp = content.entries[i];
+            content.entries[i] = content.entries[content.count - 1 - i];
+            content.entries[content.count - 1 - i] = tmp;
+        }
     }
 
     // Display based on format option
@@ -171,8 +195,8 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // Display in long format
-        display_long_format(file_infos, content.count, options.human_readable);
+        // Display in long format (supports -h and -s)
+        display_long_format(file_infos, content.count, options.human_readable, options.show_block_size);
 
         // Free file info structures
         for (int i = 0; i < content.count; i++) {

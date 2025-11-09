@@ -9,6 +9,9 @@ void init_options(Options *options) {
     options->long_format = 0;
     options->sort_by_time = 0;
     options->human_readable = 0;
+    options->reverse_order = 0;   // new
+    options->show_block_size = 0; // new
+    options->only_dirs = 0;       // new
 }
 
 int parse_options(int argc, char *argv[], Options *options) {
@@ -39,6 +42,15 @@ int parse_options(int argc, char *argv[], Options *options) {
                         break;
                     case 'h':
                         options->human_readable = 1;
+                        break;
+                    case 'r':
+                        options->reverse_order = 1;
+                        break;
+                    case 's':
+                        options->show_block_size = 1;
+                        break;
+                    case 'd':
+                        options->only_dirs = 1;
                         break;
                     default:
                         // Ignore unknown options for now
