@@ -16,14 +16,19 @@ SOURCES = \
 	$(SRC_DIR)/options/options.c \
 	$(SRC_DIR)/directory_reader/directory_reader.c \
 	$(SRC_DIR)/file_info/file_info.c \
-	$(SRC_DIR)/display/display.c
+	$(SRC_DIR)/display/display.c \
+	$(SRC_DIR)/sort/sort.c \
+	$(SRC_DIR)/utils/path.c
 
 # --- Paths to header files (.h) ---
 INCLUDE_PATHS = \
+	-I $(SRC_DIR) \
 	-I $(SRC_DIR)/options \
 	-I $(SRC_DIR)/directory_reader \
 	-I $(SRC_DIR)/file_info \
-	-I $(SRC_DIR)/display
+	-I $(SRC_DIR)/display \
+	-I $(SRC_DIR)/sort \
+	-I $(SRC_DIR)/utils
 
 # Automatically generate the list of object files (.o) and place them in build/
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SOURCES))

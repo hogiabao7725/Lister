@@ -1,0 +1,122 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-std=c99",
+      "-I",
+      "src/options",
+      "-I",
+      "src/directory_reader",
+      "-I",
+      "src/file_info",
+      "-I",
+      "src/display",
+      "-c",
+      "-o",
+      "build/main.o",
+      "src/main.c"
+    ],
+    "directory": "/home/hogiabao/Documents/Projects/Lister",
+    "file": "/home/hogiabao/Documents/Projects/Lister/src/main.c",
+    "output": "/home/hogiabao/Documents/Projects/Lister/build/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-std=c99",
+      "-I",
+      "src/options",
+      "-I",
+      "src/directory_reader",
+      "-I",
+      "src/file_info",
+      "-I",
+      "src/display",
+      "-c",
+      "-o",
+      "build/options/options.o",
+      "src/options/options.c"
+    ],
+    "directory": "/home/hogiabao/Documents/Projects/Lister",
+    "file": "/home/hogiabao/Documents/Projects/Lister/src/options/options.c",
+    "output": "/home/hogiabao/Documents/Projects/Lister/build/options/options.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-std=c99",
+      "-I",
+      "src/options",
+      "-I",
+      "src/directory_reader",
+      "-I",
+      "src/file_info",
+      "-I",
+      "src/display",
+      "-c",
+      "-o",
+      "build/directory_reader/directory_reader.o",
+      "src/directory_reader/directory_reader.c"
+    ],
+    "directory": "/home/hogiabao/Documents/Projects/Lister",
+    "file": "/home/hogiabao/Documents/Projects/Lister/src/directory_reader/directory_reader.c",
+    "output": "/home/hogiabao/Documents/Projects/Lister/build/directory_reader/directory_reader.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-std=c99",
+      "-I",
+      "src/options",
+      "-I",
+      "src/directory_reader",
+      "-I",
+      "src/file_info",
+      "-I",
+      "src/display",
+      "-c",
+      "-o",
+      "build/file_info/file_info.o",
+      "src/file_info/file_info.c"
+    ],
+    "directory": "/home/hogiabao/Documents/Projects/Lister",
+    "file": "/home/hogiabao/Documents/Projects/Lister/src/file_info/file_info.c",
+    "output": "/home/hogiabao/Documents/Projects/Lister/build/file_info/file_info.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-std=c99",
+      "-I",
+      "src/options",
+      "-I",
+      "src/directory_reader",
+      "-I",
+      "src/file_info",
+      "-I",
+      "src/display",
+      "-c",
+      "-o",
+      "build/display/display.o",
+      "src/display/display.c"
+    ],
+    "directory": "/home/hogiabao/Documents/Projects/Lister",
+    "file": "/home/hogiabao/Documents/Projects/Lister/src/display/display.c",
+    "output": "/home/hogiabao/Documents/Projects/Lister/build/display/display.o"
+  }
+]
