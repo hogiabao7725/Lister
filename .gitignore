@@ -2,6 +2,15 @@
 /build/
 /bin/
 
+# --- Cache files ---
+.cache/*
+
+# --- Compile commands ---
+/compile_commands.json
+
+# --- Test files ---
+/src/test/
+
 # --- Object files ---
 *.o
 *.obj
