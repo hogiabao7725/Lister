@@ -1,5 +1,6 @@
 #include "display.h"
 #include "file_info.h"
+#include "utils/path.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,11 +32,63 @@ static int get_terminal_width(void) {
     return 80;
 }
 
-void display_normal(const char **entries, int count) {
+void display_normal(const char **entries, int count, int show_size, const char *dir_path) {
     if (entries == NULL || count == 0) {
         return;
     }
 
+    // If show_size is enabled, we need to get file sizes and display one per line
+    if (show_size && dir_path != NULL) {
+        // Calculate total blocks and display each file with size (like ls -s)
+        long long total_blocks = 0;
+        long long *file_blocks = (long long *)malloc(count * sizeof(long long));
+        
+        if (file_blocks == NULL) {
+            // Fallback: display without sizes if memory allocation fails
+            for (int i = 0; i < count; i++) {
+                if (entries[i] != NULL) {
+                    printf("   0 %s\n", entries[i]);
+                }
+            }
+            return;
+        }
+        
+        // First pass: collect all file sizes
+        for (int i = 0; i < count; i++) {
+            file_blocks[i] = 0;
+            if (entries[i] != NULL) {
+                char *full_path = construct_full_path(dir_path, entries[i]);
+                if (full_path != NULL) {
+                    struct stat stat_info;
+                    if (stat(full_path, &stat_info) == 0) {
+                        // Only calculate size for regular files (not directories)
+                        // ls -s shows 0 for directories
+                        if (S_ISREG(stat_info.st_mode)) {
+                            // Calculate size in 512-byte blocks (like ls -s)
+                            file_blocks[i] = (stat_info.st_size + 511) / 512;
+                            total_blocks += file_blocks[i];
+                        }
+                    }
+                    free(full_path);
+                }
+            }
+        }
+        
+        // Display total line (like ls -s)
+        printf("total %lld\n", total_blocks);
+        
+        // Display each file with its size
+        for (int i = 0; i < count; i++) {
+            if (entries[i] != NULL) {
+                printf("%lld %s\n", file_blocks[i], entries[i]);
+            }
+        }
+        
+        free(file_blocks);
+        return;
+    }
+
+    // Normal multi-column display
     // Find maximum filename length
     int max_name_len = 0;
     for (int i = 0; i < count; i++) {

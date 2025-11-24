@@ -8,8 +8,10 @@
  * 
  * @param entries Array of file names
  * @param count Number of files
+ * @param show_size If non-zero, display file size in blocks before each filename
+ * @param dir_path Directory path needed to get file sizes
  */
-void display_normal(const char **entries, int count);
+void display_normal(const char **entries, int count, int show_size, const char *dir_path);
 
 /**
  * @brief Display files in long format (detailed information)

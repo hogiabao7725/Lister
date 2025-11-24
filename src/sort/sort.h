@@ -18,4 +18,3 @@ typedef enum {
 void sort_entries(char **entries, int count, SortMode mode, const char *dir_path, int reverse);
 
 #endif
-

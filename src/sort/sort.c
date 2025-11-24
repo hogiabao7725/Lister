@@ -106,4 +106,3 @@ void sort_entries(char **entries, int count, SortMode mode, const char *dir_path
     qsort(entries, count, sizeof(char *), compare_by_time);
     g_time_sort_dir = NULL;
 }
-

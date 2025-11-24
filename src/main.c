@@ -131,7 +131,8 @@ static int render_listing(const DirectoryContent *content, const Options *option
 
     // Display in normal format (just filenames)
     if (!options->long_format) {
-        display_normal((const char **)content->entries, content->count);
+        display_normal((const char **)content->entries, content->count, 
+                       options->show_size, dir_path);
         return 0;
     }
 
