@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "directory_reader.h"
 #include "display.h"
@@ -20,6 +21,53 @@ int main(int argc, char *argv[]) {
     int non_option_count = parse_options(argc, argv, &options);
 
     const char *dir_path = resolve_directory_path(argc, argv, non_option_count);
+
+    // Handle -d option: list directories themselves, not their contents
+    if (options.list_directories) {
+        struct stat path_stat;
+        if (stat(dir_path, &path_stat) != 0) {
+            fprintf(stderr, "Error: Cannot access '%s'\n", dir_path);
+            return 1;
+        }
+
+        // Create a DirectoryContent with just the directory name
+        DirectoryContent content;
+        content.count = 1;
+        content.entries = (char **)malloc(sizeof(char *));
+        if (content.entries == NULL) {
+            fprintf(stderr, "Error: Memory allocation failed\n");
+            return 1;
+        }
+
+        // Extract directory name from path
+        const char *name = dir_path;
+        const char *last_slash = strrchr(dir_path, '/');
+        if (last_slash != NULL && last_slash[1] != '\0') {
+            name = last_slash + 1;
+        } else if (last_slash != NULL && last_slash == dir_path) {
+            name = "/";
+        } else if (strcmp(dir_path, ".") == 0) {
+            name = ".";
+        }
+
+        size_t name_len = strlen(name);
+        content.entries[0] = (char *)malloc((name_len + 1) * sizeof(char));
+        if (content.entries[0] == NULL) {
+            free(content.entries);
+            fprintf(stderr, "Error: Memory allocation failed\n");
+            return 1;
+        }
+        strcpy(content.entries[0], name);
+
+        // Display the directory itself
+        if (render_listing(&content, &options, dir_path) != 0) {
+            free_directory_content(content);
+            return 1;
+        }
+
+        free_directory_content(content);
+        return 0;
+    }
 
     DirectoryContent content = read_directory(dir_path, options.show_all);
     if (content.entries == NULL) {
