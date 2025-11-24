@@ -9,7 +9,8 @@ char *construct_full_path(const char *base_path, const char *filename) {
 
     size_t base_len = strlen(base_path);
     size_t file_len = strlen(filename);
-    size_t total_len = base_len + file_len + 2; // +2 for '/' and '\0'
+    // +2 for '/' separator and null terminator
+    size_t total_len = base_len + file_len + 2;
 
     char *full_path = (char *)malloc(total_len * sizeof(char));
     if (full_path == NULL) {
@@ -18,6 +19,7 @@ char *construct_full_path(const char *base_path, const char *filename) {
 
     strcpy(full_path, base_path);
 
+    // Add '/' separator if base_path doesn't end with one
     if (base_len > 0 && base_path[base_len - 1] != '/') {
         full_path[base_len] = '/';
         full_path[base_len + 1] = '\0';

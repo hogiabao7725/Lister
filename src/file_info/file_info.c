@@ -14,34 +14,34 @@ void mode_to_permissions(mode_t mode, char *perm_string) {
         return;
     }
 
-    // File type
+    // Determine file type character
     if (S_ISDIR(mode)) {
-        perm_string[0] = 'd';
+        perm_string[0] = 'd';  // Directory
     } else if (S_ISLNK(mode)) {
-        perm_string[0] = 'l';
+        perm_string[0] = 'l';  // Symbolic link
     } else if (S_ISCHR(mode)) {
-        perm_string[0] = 'c';
+        perm_string[0] = 'c';  // Character device
     } else if (S_ISBLK(mode)) {
-        perm_string[0] = 'b';
+        perm_string[0] = 'b';  // Block device
     } else if (S_ISFIFO(mode)) {
-        perm_string[0] = 'p';
+        perm_string[0] = 'p';  // FIFO/pipe
     } else if (S_ISSOCK(mode)) {
-        perm_string[0] = 's';
+        perm_string[0] = 's';  // Socket
     } else {
-        perm_string[0] = '-';
+        perm_string[0] = '-';  // Regular file
     }
 
-    // Owner permissions
+    // Owner (user) permissions: read, write, execute
     perm_string[1] = (mode & S_IRUSR) ? 'r' : '-';
     perm_string[2] = (mode & S_IWUSR) ? 'w' : '-';
     perm_string[3] = (mode & S_IXUSR) ? 'x' : '-';
 
-    // Group permissions
+    // Group permissions: read, write, execute
     perm_string[4] = (mode & S_IRGRP) ? 'r' : '-';
     perm_string[5] = (mode & S_IWGRP) ? 'w' : '-';
     perm_string[6] = (mode & S_IXGRP) ? 'x' : '-';
 
-    // Other permissions
+    // Other (world) permissions: read, write, execute
     perm_string[7] = (mode & S_IROTH) ? 'r' : '-';
     perm_string[8] = (mode & S_IWOTH) ? 'w' : '-';
     perm_string[9] = (mode & S_IXOTH) ? 'x' : '-';
@@ -51,8 +51,8 @@ void mode_to_permissions(mode_t mode, char *perm_string) {
 
 FileInfo get_file_info(const char *filepath, const char *filename) {
     FileInfo info;
-    
-    // Initialize all fields
+
+    // Initialize all fields to safe defaults
     info.name = NULL;
     info.permissions[0] = '\0';
     info.type_char = '-';
@@ -80,17 +80,17 @@ FileInfo get_file_info(const char *filepath, const char *filename) {
     }
     strcpy(info.name, filename);
 
-    // Get permissions string
+    // Get permissions string and file type
     mode_to_permissions(info.stat_info.st_mode, info.permissions);
     info.type_char = info.permissions[0];
 
-    // Get size
+    // Get file size
     info.size = (long long)info.stat_info.st_size;
 
-    // Get link count
+    // Get hard link count
     info.link_count = (int)info.stat_info.st_nlink;
 
-    // Get owner name
+    // Get owner name from UID
     struct passwd *pw = getpwuid(info.stat_info.st_uid);
     if (pw != NULL) {
         size_t owner_len = strlen(pw->pw_name);
@@ -99,7 +99,7 @@ FileInfo get_file_info(const char *filepath, const char *filename) {
             strcpy(info.owner, pw->pw_name);
         }
     } else {
-        // Fallback: use UID as string
+        // Fallback: convert UID to string if getpwuid fails
         char uid_str[32];
         snprintf(uid_str, sizeof(uid_str), "%u", info.stat_info.st_uid);
         size_t uid_str_len = strlen(uid_str);
@@ -109,7 +109,7 @@ FileInfo get_file_info(const char *filepath, const char *filename) {
         }
     }
 
-    // Get group name
+    // Get group name from GID
     struct group *gr = getgrgid(info.stat_info.st_gid);
     if (gr != NULL) {
         size_t group_len = strlen(gr->gr_name);
@@ -118,7 +118,7 @@ FileInfo get_file_info(const char *filepath, const char *filename) {
             strcpy(info.group, gr->gr_name);
         }
     } else {
-        // Fallback: use GID as string
+        // Fallback: convert GID to string if getgrgid fails
         char gid_str[32];
         snprintf(gid_str, sizeof(gid_str), "%u", info.stat_info.st_gid);
         size_t gid_str_len = strlen(gid_str);
@@ -128,14 +128,13 @@ FileInfo get_file_info(const char *filepath, const char *filename) {
         }
     }
 
-    // Format modification date
+    // Format modification date as "MMM DD HH:MM"
     struct tm *time_info = localtime(&info.stat_info.st_mtime);
     if (time_info != NULL) {
-        // Allocate memory for date string (format: "MMM DD HH:MM")
         info.date_string = (char *)malloc(13 * sizeof(char));
         if (info.date_string != NULL) {
-            char months[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+            const char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
             snprintf(info.date_string, 13, "%s %2d %02d:%02d",
                     months[time_info->tm_mon],
                     time_info->tm_mday,
@@ -171,13 +170,13 @@ void format_human_readable_size(long long size, char *buffer, size_t buffer_size
     int unit_index = 0;
     double size_double = (double)size;
 
-    // Convert to appropriate unit
+    // Convert to appropriate unit (B, K, M, G, T, P)
     while (size_double >= 1024.0 && unit_index < 5) {
         size_double /= 1024.0;
         unit_index++;
     }
 
-    // Format the string
+    // Format the string based on unit
     if (unit_index == 0) {
         // Bytes: show as integer
         snprintf(buffer, buffer_size, "%lld%s", (long long)size_double, units[unit_index]);

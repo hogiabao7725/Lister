@@ -9,7 +9,7 @@
 
 /**
  * @brief Get terminal width in columns
- * 
+ *
  * @return int Terminal width, or 80 if unable to determine
  */
 static int get_terminal_width(void) {
@@ -17,7 +17,7 @@ static int get_terminal_width(void) {
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
         return w.ws_col;
     }
-    
+
     // Fallback: check environment variable
     const char *cols = getenv("COLUMNS");
     if (cols != NULL) {
@@ -26,7 +26,7 @@ static int get_terminal_width(void) {
             return width;
         }
     }
-    
+
     // Default width
     return 80;
 }
@@ -49,24 +49,24 @@ void display_normal(const char **entries, int count) {
 
     // Get terminal width
     int terminal_width = get_terminal_width();
-    
+
     // Calculate column width: max filename length + 2 spaces for padding
     int column_width = max_name_len + 2;
-    
+
     // Calculate number of columns
     int num_columns = terminal_width / column_width;
     if (num_columns < 1) {
         num_columns = 1;
     }
-    
+
     // Calculate number of rows needed
     int num_rows = (count + num_columns - 1) / num_columns;  // Ceiling division
-    
+
     // Display in column-major order (like ls command)
     for (int row = 0; row < num_rows; row++) {
         for (int col = 0; col < num_columns; col++) {
             int index = col * num_rows + row;
-            
+
             if (index < count && entries[index] != NULL) {
                 // Left-align the filename in its column
                 printf("%-*s", column_width, entries[index]);

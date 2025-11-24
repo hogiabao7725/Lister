@@ -9,6 +9,7 @@ typedef struct {
     int long_format;       // -l flag: display in long format
     int sort_by_time;     // -t flag: sort by modification time
     int human_readable;   // -h flag: display file sizes in human-readable format
+    int reverse_sort;      // -r flag: reverse the sort order
 } Options;
 
 /**

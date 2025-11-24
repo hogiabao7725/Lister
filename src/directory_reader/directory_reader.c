@@ -18,7 +18,7 @@ DirectoryContent read_directory(const char *path, int show_all) {
         return content;
     }
 
-    // First pass: count entries
+    // First pass: count valid entries
     struct dirent *entry;
     int count = 0;
     while ((entry = readdir(dir)) != NULL) {
@@ -27,7 +27,7 @@ DirectoryContent read_directory(const char *path, int show_all) {
             continue;
         }
 
-        // If show_all is 0, skip hidden files (starting with '.')
+        // Skip hidden files if show_all is false
         if (!show_all && entry->d_name[0] == '.') {
             continue;
         }
@@ -56,7 +56,7 @@ DirectoryContent read_directory(const char *path, int show_all) {
             continue;
         }
 
-        // If show_all is 0, skip hidden files
+        // Skip hidden files if show_all is false
         if (!show_all && entry->d_name[0] == '.') {
             continue;
         }
@@ -65,7 +65,7 @@ DirectoryContent read_directory(const char *path, int show_all) {
         size_t name_len = strlen(entry->d_name);
         content.entries[index] = (char *)malloc((name_len + 1) * sizeof(char));
         if (content.entries[index] == NULL) {
-            // Clean up on error
+            // Clean up allocated memory on error
             for (int i = 0; i < index; i++) {
                 free(content.entries[i]);
             }
