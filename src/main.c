@@ -15,10 +15,17 @@ static FileInfo *collect_file_infos(const char *dir_path, DirectoryContent conte
 static void free_file_info_list(FileInfo *file_infos, int count);
 static int render_listing(const DirectoryContent *content, const Options *options,
                           const char *dir_path);
+static void print_help(const char *program_name);
 
 int main(int argc, char *argv[]) {
     Options options;
     int non_option_count = parse_options(argc, argv, &options);
+
+    // Handle --help option (parse_options returns -1 if --help was found)
+    if (non_option_count == -1) {
+        print_help(argv[0]);
+        return 0;
+    }
 
     const char *dir_path = resolve_directory_path(argc, argv, non_option_count);
 
@@ -194,4 +201,37 @@ static int render_listing(const DirectoryContent *content, const Options *option
     display_long_format(file_infos, content->count, options->human_readable);
     free_file_info_list(file_infos, content->count);
     return 0;
+}
+
+/**
+ * @brief Print help message
+ * 
+ * @param program_name Name of the program (argv[0])
+ */
+static void print_help(const char *program_name) {
+    printf("Usage: %s [OPTIONS] [DIRECTORY]\n", program_name);
+    printf("\n");
+    printf("List directory contents (similar to ls command).\n");
+    printf("\n");
+    printf("Options:\n");
+    printf("  -a                     Show all files including hidden ones (starting with '.')\n");
+    printf("  -d                     List directories themselves, not their contents\n");
+    printf("  -h                     Display file sizes in human-readable format (use with -l)\n");
+    printf("  -l                     Use long format (detailed information)\n");
+    printf("  -r                     Reverse the sort order\n");
+    printf("  -s                     Display file size in blocks (512-byte blocks)\n");
+    printf("  -t                     Sort by modification time instead of alphabetically\n");
+    printf("  --help                 Display this help message and exit\n");
+    printf("\n");
+    printf("When using -l (long format), you can combine with -h for human-readable sizes:\n");
+    printf("  -lh                    Long format with human-readable file sizes\n");
+    printf("\n");
+    printf("Examples:\n");
+    printf("  %s                     List current directory\n", program_name);
+    printf("  %s -l                  List in long format\n", program_name);
+    printf("  %s -a                  Show all files including hidden ones\n", program_name);
+    printf("  %s -d src              Show directory 'src' itself\n", program_name);
+    printf("  %s -lh                 Long format with human-readable sizes\n", program_name);
+    printf("  %s -rt                 Sort by time in reverse order\n", program_name);
+    printf("\n");
 }

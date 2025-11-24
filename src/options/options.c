@@ -26,6 +26,13 @@ int parse_options(int argc, char *argv[], Options *options) {
 
     // Parse each command-line argument
     for (int i = 1; i < argc; i++) {
+        // Check for --help (long option)
+        if (strcmp(argv[i], "--help") == 0) {
+            // Return special value to indicate help was requested
+            // We'll handle this in main() by checking if return value is -1
+            return -1;
+        }
+
         // Check if argument is an option flag (starts with '-')
         if (argv[i][0] == '-' && strlen(argv[i]) > 1) {
             // Process each character in the option string (e.g., "-al" processes 'a' and 'l')
