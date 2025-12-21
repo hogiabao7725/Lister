@@ -35,5 +35,33 @@ lister/
 - **`.gitignore`**: Configuration file for Git to ignore unnecessary files and folders (such as bin/ and build/) when committing code.
 - **`README.md`**: This file itself, providing an overview of the project. 
 
+## History Feature
+
+To enable command history logging, use the wrapper script:
+
+1. **Install the wrapper:**
+   ```bash
+   ./install_history.sh
+   ```
+   This will add the wrapper function to your shell config (`~/.bashrc` or `~/.zshrc`).
+
+2. **Restart your shell** or run:
+   ```bash
+   source ~/.zshrc  # or ~/.bashrc
+   ```
+
+3. **Use `lister` as usual** - commands and results will be automatically logged to `src/history.txt`.
+
+The history file contains:
+- Timestamp
+- Full command with arguments
+- Exit code
+- Command output
+
+To manually source the wrapper without installation:
+```bash
+source lister_history.sh
+```
+
 ## How to Build the Project
 
